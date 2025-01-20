@@ -1,0 +1,83 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "environment_name": {
+            "defaultValue": "[concat('managedEnv-', uniqueString(resourceGroup().id))]",
+            "type": "string"
+        },
+        "location": {
+            "defaultValue": "eastus",
+            "type": "string"
+        }
+    },
+    "variables": {
+        "logAnalyticsWorkspaceName": "[concat('logs-', parameters('environment_name'))]"
+    },
+    "resources": [
+        {
+            "type": "Microsoft.OperationalInsights/workspaces",
+            "apiVersion": "2021-06-01",
+            "name": "[variables('logAnalyticsWorkspaceName')]",
+            "location": "[parameters('location')]",
+            "properties": {
+                "retentionInDays": 30,
+                "features": {
+                    "searchVersion": 1
+                },
+                "sku": {
+                    "name": "PerGB2018"
+                }
+            }
+        },
+        {
+            "type": "Microsoft.App/managedEnvironments",
+            "apiVersion": "2022-03-01",
+            "name": "[parameters('environment_name')]",
+            "location": "[parameters('location')]",
+            "properties": {
+                "appLogsConfiguration": {
+                    "destination": "log-analytics",
+                    "logAnalyticsConfiguration": {
+                        "customerId": "[reference(resourceId('Microsoft.OperationalInsights/workspaces/', variables('logAnalyticsWorkspaceName')), '2021-06-01').customerId]",
+                        "sharedKey": "[listKeys(resourceId('Microsoft.OperationalInsights/workspaces/', variables('logAnalyticsWorkspaceName')), '2021-06-01').primarySharedKey]"
+                    }
+                }
+            }
+        },
+        {
+            "type": "Microsoft.App/containerApps",
+            "apiVersion": "2024-03-01",
+            "name": "nginx",
+            "location": "[parameters('location')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.App/managedEnvironments/', parameters('environment_name'))]"
+            ],
+            "properties": {
+                "managedEnvironmentId": "[resourceId('Microsoft.App/managedEnvironments/', parameters('environment_name'))]",
+                "configuration": {
+                    "ingress": {
+                        "external": true,
+                        "targetPort": 8080
+                    }
+                },
+                "template": {
+                    "containers": [
+                        {
+                            "image": "nginx:latest",
+                            "name": "nginx",
+                            "resources": {
+                                "cpu": 0.5,
+                                "memory": "1.0Gi"
+                            }
+                        }
+                    ],
+                    "scale": {
+                        "minReplicas": 1,
+                        "maxReplicas": 1
+                    }
+                }
+            }
+        }
+    ]
+}
