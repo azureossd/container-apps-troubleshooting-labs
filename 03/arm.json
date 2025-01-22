@@ -82,8 +82,8 @@
                         }
                     ],
                     "scale": {
-                        "minReplicas": 50,
-                        "maxReplicas": 50
+                        "minReplicas": 20,
+                        "maxReplicas": 20
                     }
                 }
             }
