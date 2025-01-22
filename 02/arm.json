@@ -61,6 +61,9 @@
                         "targetPort": 8080
                     }
                 },
+                // TODO
+                // Need to figure out a good way to store this image and pull it
+                // Ideally to avoid any usage of credentials or identities
                 "template": {
                     "containers": [
                         {
