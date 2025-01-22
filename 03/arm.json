@@ -42,7 +42,15 @@
                         "customerId": "[reference(resourceId('Microsoft.OperationalInsights/workspaces/', variables('logAnalyticsWorkspaceName')), '2021-06-01').customerId]",
                         "sharedKey": "[listKeys(resourceId('Microsoft.OperationalInsights/workspaces/', variables('logAnalyticsWorkspaceName')), '2021-06-01').primarySharedKey]"
                     }
-                }
+                },
+                "workloadProfiles": [
+                    {
+                        "name": "d4",
+                        "workloadProfileType": "d4",
+                        "minimumCount": 1,
+                        "maximumCount": 1
+                    }
+                ]
             }
         },
         {
@@ -61,6 +69,7 @@
                         "targetPort": 80
                     }
                 },
+                "workloadProfileName": "d4",
                 "template": {
                     "containers": [
                         {
