@@ -32,7 +32,7 @@
         },
         {
             "type": "Microsoft.App/managedEnvironments",
-            "apiVersion": "2022-03-01",
+            "apiVersion": "2024-03-01",
             "name": "[parameters('environment_name')]",
             "location": "[parameters('location')]",
             "properties": {
@@ -67,8 +67,8 @@
                             "image": "nginx:latest",
                             "name": "nginx",
                             "resources": {
-                                "cpu": 4,
-                                "memory": "8Gi"
+                                "cpu": 0.5,
+                                "memory": "1.0Gi"
                             }
                         }
                     ],
