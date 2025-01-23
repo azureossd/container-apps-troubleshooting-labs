@@ -67,7 +67,7 @@
                 "template": {
                     "containers": [
                         {
-                            "image": "ghcr.io/ajsalemo/container-apps-elx-labs/container-apps-elx-labs-02",
+                            "image": "ghcr.io/ajsalemo/container-apps-elx-labs/container-apps-elx-labs-02:latest",
                             "name": "container-apps-elx-labs-02",
                             "resources": {
                                 "cpu": 0.5,
