@@ -51,7 +51,7 @@
         {
             "type": "Microsoft.App/containerApps",
             "apiVersion": "2024-03-01",
-            "name": "nginx",
+            "name": "container-apps-elx-labs-02",
             "location": "[parameters('location')]",
             "dependsOn": [
                 "[resourceId('Microsoft.App/managedEnvironments/', parameters('environment_name'))]"
@@ -64,14 +64,11 @@
                         "targetPort": 8080
                     }
                 },
-                // TODO
-                // Need to figure out a good way to store this image and pull it
-                // Ideally to avoid any usage of credentials or identities
                 "template": {
                     "containers": [
                         {
-                            "image": "nginx:latest",
-                            "name": "nginx",
+                            "image": "ghcr.io/ajsalemo/container-apps-elx-labs/container-apps-elx-labs-02",
+                            "name": "container-apps-elx-labs-02",
                             "resources": {
                                 "cpu": 0.5,
                                 "memory": "1.0Gi"
