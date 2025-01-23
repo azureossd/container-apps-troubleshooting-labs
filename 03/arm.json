@@ -35,6 +35,9 @@
             "apiVersion": "2024-03-01",
             "name": "[parameters('environment_name')]",
             "location": "[parameters('location')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.OperationalInsights/workspaces/', variables('logAnalyticsWorkspaceName'))]"
+            ],
             "properties": {
                 "appLogsConfiguration": {
                     "destination": "log-analytics",
