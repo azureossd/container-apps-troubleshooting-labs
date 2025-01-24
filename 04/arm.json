@@ -25,22 +25,19 @@
             },
             "tags": {
                 "SecurityControl": "Ignore"
-            }
+            },
+            "resources": [
+                {
+                    "type": "Microsoft.Storage/storageAccounts/fileServices/shares",
+                    "apiVersion": "2023-05-01",
+                    "name": "[format('{0}/default/{1}', 'azurefiles', uniqueString(resourceGroup().id))]",
+                    "dependsOn": [
+                        "[resourceId('Microsoft.Storage/storageAccounts', concat('storage', uniqueString(resourceGroup().id)))]"
+                    ]
+                }
+            ]
         },
-        {
-            "type": "Microsoft.Storage/storageAccounts/fileServices/shares",
-            "apiVersion": "2023-05-01",
-            "name": "[format('{0}/default/{1}', 'azurefiles', uniqueString(resourceGroup().id))]",
-            "dependsOn": [
-                "[resourceId('Microsoft.Storage/storageAccounts', concat('storage', uniqueString(resourceGroup().id)))]"
-            ],
-            "properties": {
-                "accessTier": "Hot",
-                "enabledProtocols": "SMB",
-                "rootSquash": "NoRootSquash",
-                "quota": 1024
-            }
-        },
+
         {
             "type": "Microsoft.OperationalInsights/workspaces",
             "apiVersion": "2021-06-01",
@@ -62,7 +59,8 @@
             "name": "[parameters('environment_name')]",
             "location": "[resourceGroup().location]",
             "dependsOn": [
-                "[resourceId('Microsoft.OperationalInsights/workspaces/', variables('logAnalyticsWorkspaceName'))]"
+                "[resourceId('Microsoft.OperationalInsights/workspaces/', variables('logAnalyticsWorkspaceName'))]",
+                "[resourceId('Microsoft.Storage/storageAccounts', concat('storage', uniqueString(resourceGroup().id)))]"
             ],
             "properties": {
                 "appLogsConfiguration": {
