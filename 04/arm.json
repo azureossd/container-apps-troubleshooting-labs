@@ -114,7 +114,7 @@
                             "volumeMounts": [
                                 {
                                     "mountPath": "/usr/share/data",
-                                    "name": "nginx-volume"
+                                    "volumeName": "nginx-volume"
                                 }
                             ]
                         }
