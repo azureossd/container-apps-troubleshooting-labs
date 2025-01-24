@@ -5,10 +5,6 @@
         "environment_name": {
             "defaultValue": "[concat('managedEnv-', uniqueString(resourceGroup().id))]",
             "type": "string"
-        },
-        "location": {
-            "defaultValue": "eastus",
-            "type": "string"
         }
     },
     "variables": {
@@ -19,7 +15,7 @@
             "type": "Microsoft.OperationalInsights/workspaces",
             "apiVersion": "2021-06-01",
             "name": "[variables('logAnalyticsWorkspaceName')]",
-            "location": "[parameters('location')]",
+            "location": "[resourceGroup().location]",
             "properties": {
                 "retentionInDays": 30,
                 "features": {
@@ -34,7 +30,7 @@
             "type": "Microsoft.App/managedEnvironments",
             "apiVersion": "2024-03-01",
             "name": "[parameters('environment_name')]",
-            "location": "[parameters('location')]",
+            "location": "[resourceGroup().location]",
             "dependsOn": [
                 "[resourceId('Microsoft.OperationalInsights/workspaces/', variables('logAnalyticsWorkspaceName'))]"
             ],
@@ -51,8 +47,8 @@
         {
             "type": "Microsoft.App/containerApps",
             "apiVersion": "2024-03-01",
-            "name": "container-apps-elx-labs-02",
-            "location": "[parameters('location')]",
+            "name": "nginx",
+            "location": "[resourceGroup().location]",
             "dependsOn": [
                 "[resourceId('Microsoft.App/managedEnvironments/', parameters('environment_name'))]"
             ],
@@ -67,11 +63,11 @@
                 "template": {
                     "containers": [
                         {
-                            "image": "ghcr.io/ajsalemo/container-apps-elx-labs/container-apps-elx-labs-02:latest",
+                            "image": "ghcr.io/ajsalemo/container-apps-elx-labs/container-apps-elx-labs-02",
                             "name": "container-apps-elx-labs-02",
                             "resources": {
-                                "cpu": 0.5,
-                                "memory": "1.0Gi"
+                                "cpu": 1,
+                                "memory": "2.0Gi"
                             }
                         }
                     ],
