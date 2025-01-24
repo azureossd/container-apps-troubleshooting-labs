@@ -73,14 +73,14 @@
                 {
                     "type": "storages",
                     "apiVersion": "2024-03-01",
-                    "name": "[concat(toLower(parameters('environment_name')), 'storage')]",
+                    "name": "[concat(parameters('environment_name'), 'storage')]",
                     "dependsOn": [
                         "[resourceId('Microsoft.App/managedEnvironments/', parameters('environment_name'))]"
                     ],
                     "properties": {
                         "azureFile": {
                             "accessMode": "ReadWrite",
-                            "shareName": "[concat('azurefiles', uniqueString(resourceGroup().id))]",
+                            "shareName": "[concat(parameters('environment_name'), '/', 'azurefiles', uniqueString(resourceGroup().id))]",
                             "accountName": "[concat('storage', uniqueString(resourceGroup().id))]",
                             "accountKey": "[listKeys(resourceId('Microsoft.Storage/storageAccounts/', concat('storage', uniqueString(resourceGroup().id))), '2021-04-01').keys[0].value]"
                         }
@@ -128,7 +128,7 @@
                     "volumes": [
                         {
                             "name": "nginx-volume",
-                            "storageName": "[concat(parameters('environment_name'), 'storage')]",
+                            "storageName": "[concat(parameters('environment_name'), '/', parameters('environment_name'), 'storage')]",
                             "storageType": "AzureFile"
                         }
                     ]
