@@ -72,25 +72,25 @@
                         "shareName": "[concat('azurefileshare-', uniqueString(resourceGroup().id))]"
                     }
                 }
-            },
-            "resources": [
-                {
-                    "type": "storages",
-                    "apiVersion": "2024-03-01",
-                    "name": "[concat(parameters('environment_name'), '-storage')]",
-                    "dependsOn": [
-                        "[resourceId('Microsoft.App/managedEnvironments/', parameters('environment_name'))]"
-                    ],
-                    "properties": {
-                        "azureFile": {
-                            "accessMode": "ReadWrite",
-                            "shareName": "[concat('azurefileshare-', uniqueString(resourceGroup().id))]",
-                            "accountName": "[concat('storage', uniqueString(resourceGroup().id))]",
-                            "accountKey": "[listKeys(resourceId('Microsoft.Storage/storageAccounts/', concat('storage', uniqueString(resourceGroup().id))), '2021-04-01').keys[0].value]"
-                        }
-                    }
-                }
-            ]
+            }
+            // "resources": [
+            //     {
+            //         "type": "storages",
+            //         "apiVersion": "2024-03-01",
+            //         "name": "[concat(parameters('environment_name'), '-storage')]",
+            //         "dependsOn": [
+            //             "[resourceId('Microsoft.App/managedEnvironments/', parameters('environment_name'))]"
+            //         ],
+            //         "properties": {
+            //             "azureFile": {
+            //                 "accessMode": "ReadWrite",
+            //                 "shareName": "[concat('azurefileshare-', uniqueString(resourceGroup().id))]",
+            //                 "accountName": "[concat('storage', uniqueString(resourceGroup().id))]",
+            //                 "accountKey": "[listKeys(resourceId('Microsoft.Storage/storageAccounts/', concat('storage', uniqueString(resourceGroup().id))), '2021-04-01').keys[0].value]"
+            //             }
+            //         }
+            //     }
+            // ]
         },
         {
             "type": "Microsoft.App/containerApps",
