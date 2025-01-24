@@ -71,7 +71,7 @@
                         "storageAccountId": "[resourceId('Microsoft.Storage/storageAccounts', concat('storage', uniqueString(resourceGroup().id)))]",
                         "shareName": "[concat('storage', '/default/', 'azurefileshare-', uniqueString(resourceGroup().id))]"
                     }
-                }   
+                }
             },
             "resources": [
                 {
