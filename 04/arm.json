@@ -32,7 +32,7 @@
             "apiVersion": "2023-05-01",
             "name": "[concat('storage', '/default/', 'azurefileshare-', uniqueString(resourceGroup().id))]",
             "dependsOn": [
-                "[resourceId('Microsoft.Storage/storageAccounts', concat('storage', uniqueString(resourceGroup().id)))]"
+                "[resourceId('Microsoft.Storage/storageAccounts/', concat('storage', uniqueString(resourceGroup().id)))]"
             ]
         },
         {
@@ -68,8 +68,8 @@
                 },
                 "storageConfiguration": {
                     "fileShare": {
-                        "storageAccountId": "[resourceId('Microsoft.Storage/storageAccounts', concat('storage', uniqueString(resourceGroup().id)))]",
-                        "shareName": "[concat('storage', '/default/', 'azurefileshare-', uniqueString(resourceGroup().id))]"
+                        "storageAccountId": "[resourceId('Microsoft.Storage/storageAccounts/', concat('storage', uniqueString(resourceGroup().id)))]",
+                        "shareName": "[concat('azurefileshare-', uniqueString(resourceGroup().id))]"
                     }
                 }
             },
@@ -84,9 +84,9 @@
                     "properties": {
                         "azureFile": {
                             "accessMode": "ReadWrite",
-                            "shareName": "[concat('storage', '/default/', 'azurefileshare-', uniqueString(resourceGroup().id))]",
+                            "shareName": "[concat('azurefileshare-', uniqueString(resourceGroup().id))]",
                             "accountName": "[concat('storage', uniqueString(resourceGroup().id))]",
-                            "accountKey": "[listKeys(resourceId('Microsoft.Storage/storageAccounts', concat('storage', uniqueString(resourceGroup().id))), '2021-04-01').keys[0].value]"
+                            "accountKey": "[listKeys(resourceId('Microsoft.Storage/storageAccounts/', concat('storage', uniqueString(resourceGroup().id))), '2021-04-01').keys[0].value]"
                         }
                     }
                 }
