@@ -130,7 +130,7 @@
                     "volumes": [
                         {
                             "name": "nginx-volume",
-                            "storageName": "[concat(parameters('environment_name'), '/', parameters('environment_name'), 'storage')]",
+                            "storageName": "[concat(parameters('environment_name'), parameters('environment_name'), 'storage')]",
                             "storageType": "AzureFile"
                         }
                     ]
