@@ -75,7 +75,7 @@
                 {
                     "type": "storages",
                     "apiVersion": "2024-03-01",
-                    "name": "[concat(parameters('environment_name'), 'storage')]",
+                    "name": "managedenvstorage",
                     "dependsOn": [
                         "[resourceId('Microsoft.App/managedEnvironments/', parameters('environment_name'))]"
                     ],
@@ -130,7 +130,7 @@
                     "volumes": [
                         {
                             "name": "nginx-volume",
-                            "storageName": "[concat(parameters('environment_name'), '/', parameters('environment_name'), 'storage')]",
+                            "storageName": "managedenvstorage",
                             "storageType": "AzureFile"
                         }
                     ]
