@@ -96,7 +96,7 @@
             "name": "nginx",
             "location": "[resourceGroup().location]",
             "dependsOn": [
-                "[resourceId('Microsoft.App/managedEnvironments/', parameters('environment_name'))]",
+                "[resourceId('Microsoft.App/managedEnvironments/', parameters('environment_name'))]"
             ],
             "properties": {
                 "managedEnvironmentId": "[resourceId('Microsoft.App/managedEnvironments/', parameters('environment_name'))]",
