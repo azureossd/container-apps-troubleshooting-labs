@@ -55,7 +55,7 @@
         },
         {
             "type": "Microsoft.App/managedEnvironments",
-            "apiVersion": "2024-03-01",
+            "apiVersion": "2023-05-01",
             "name": "[parameters('environment_name')]",
             "location": "[resourceGroup().location]",
             "dependsOn": [
@@ -74,7 +74,7 @@
             "resources": [
                 {
                     "type": "storages",
-                    "apiVersion": "2024-03-01",
+                    "apiVersion": "2022-03-01",
                     "name": "managedenvstorage",
                     "dependsOn": [
                         "[resourceId('Microsoft.App/managedEnvironments/', parameters('environment_name'))]"
@@ -92,11 +92,11 @@
         },
         {
             "type": "Microsoft.App/containerApps",
-            "apiVersion": "2024-03-01",
+            "apiVersion": "2023-05-01",
             "name": "nginx",
             "location": "[resourceGroup().location]",
             "dependsOn": [
-                "[resourceId('Microsoft.App/managedEnvironments/', parameters('environment_name'))]"
+                "[resourceId('Microsoft.App/managedEnvironments/', parameters('environment_name'))]",
             ],
             "properties": {
                 "managedEnvironmentId": "[resourceId('Microsoft.App/managedEnvironments/', parameters('environment_name'))]",
