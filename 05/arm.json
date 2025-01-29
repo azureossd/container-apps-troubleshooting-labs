@@ -1,0 +1,172 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "environment_name": {
+            "defaultValue": "[concat('managedenv', uniqueString(resourceGroup().id))]",
+            "type": "string"
+        }
+    },
+    "variables": {
+        "logAnalyticsWorkspaceName": "[concat('logs-', parameters('environment_name'))]"
+    },
+    "resources": [
+        {
+            "type": "Microsoft.Network/virtualNetworks",
+            "apiVersion": "2024-01-01",
+            "name": "vnet",
+            "location": "[resourceGroup().location]",
+            "properties": {
+                "addressSpace": {
+                    "addressPrefixes": [
+                        "10.0.0.0/16"
+                    ],
+                    "subnets": [
+                        {
+                            "name": "default",
+                            "properties": {
+                                "addressPrefix": "10.0.0.0/23"
+                            }
+                        }
+                    ]
+                }
+            }
+        },
+        {
+            "type": "Microsoft.Storage/storageAccounts",
+            "apiVersion": "2023-05-01",
+            "name": "[concat('storage', uniqueString(resourceGroup().id))]",
+            "location": "[resourceGroup().location]",
+            "sku": {
+                "name": "Standard_LRS"
+            },
+            "kind": "StorageV2",
+            "properties": {
+                "accessTier": "Hot"
+            },
+            "tags": {
+                "SecurityControl": "Ignore"
+            },
+            "resources": [
+                {
+                    "type": "Microsoft.Storage/storageAccounts/fileServices/shares",
+                    "apiVersion": "2023-05-01",
+                    "name": "[format('{0}/default/{1}', concat('storage', uniqueString(resourceGroup().id)), concat('azurefiles', uniqueString(resourceGroup().id)))]",
+                    "dependsOn": [
+                        "[resourceId('Microsoft.Storage/storageAccounts', concat('storage', uniqueString(resourceGroup().id)))]"
+                    ]
+                }
+            ]
+        },
+
+        {
+            "type": "Microsoft.OperationalInsights/workspaces",
+            "apiVersion": "2021-06-01",
+            "name": "[variables('logAnalyticsWorkspaceName')]",
+            "location": "[resourceGroup().location]",
+            "properties": {
+                "retentionInDays": 30,
+                "features": {
+                    "searchVersion": 1
+                },
+                "sku": {
+                    "name": "PerGB2018"
+                }
+            }
+        },
+        {
+            "type": "Microsoft.App/managedEnvironments",
+            "apiVersion": "2023-05-01",
+            "name": "[parameters('environment_name')]",
+            "location": "[resourceGroup().location]",
+            "dependsOn": [
+                "[resourceId('Microsoft.OperationalInsights/workspaces/', variables('logAnalyticsWorkspaceName'))]",
+                "[resourceId('Microsoft.Storage/storageAccounts', concat('storage', uniqueString(resourceGroup().id)))]"
+            ],
+            "properties": {
+                "appLogsConfiguration": {
+                    "destination": "log-analytics",
+                    "logAnalyticsConfiguration": {
+                        "customerId": "[reference(resourceId('Microsoft.OperationalInsights/workspaces/', variables('logAnalyticsWorkspaceName')), '2021-06-01').customerId]",
+                        "sharedKey": "[listKeys(resourceId('Microsoft.OperationalInsights/workspaces/', variables('logAnalyticsWorkspaceName')), '2021-06-01').primarySharedKey]"
+                    }
+                },
+                "workloadProfiles": [
+                    {
+                        "name": "Consumption",
+                        "workloadProfileType": "Consumption"
+                    }
+                ],
+                "vnetConfiguration": {
+                    "subnetId": "[resourceId('Microsoft.Network/virtualNetworks/subnets', 'vnet', 'default')]"
+                }
+            },
+            "resources": [
+                {
+                    "type": "storages",
+                    "apiVersion": "2023-05-01",
+                    "name": "managedenvstorage",
+                    "dependsOn": [
+                        "[resourceId('Microsoft.App/managedEnvironments/', parameters('environment_name'))]"
+                    ],
+                    "properties": {
+                        "azureFile": {
+                            "accessMode": "ReadWrite",
+                            "shareName": "[concat('azurefiles', uniqueString(resourceGroup().id))]",
+                            "accountName": "[concat('storage', uniqueString(resourceGroup().id))]",
+                            "accountKey": "[listKeys(resourceId('Microsoft.Storage/storageAccounts/', concat('storage', uniqueString(resourceGroup().id))), '2021-04-01').keys[0].value]"
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "type": "Microsoft.App/containerApps",
+            "apiVersion": "2023-05-01",
+            "name": "nginx",
+            "location": "[resourceGroup().location]",
+            "dependsOn": [
+                "[resourceId('Microsoft.App/managedEnvironments/', parameters('environment_name'))]",
+                "[resourceId('Microsoft.App/managedEnvironments/storages', parameters('environment_name'), 'managedenvstorage')]"
+            ],
+            "properties": {
+                "managedEnvironmentId": "[resourceId('Microsoft.App/managedEnvironments/', parameters('environment_name'))]",
+                "configuration": {
+                    "ingress": {
+                        "external": true,
+                        "targetPort": 80
+                    }
+                },
+                "template": {
+                    "containers": [
+                        {
+                            "image": "nginx:latest",
+                            "name": "nginx",
+                            "resources": {
+                                "cpu": 1,
+                                "memory": "2.0Gi"
+                            },
+                            "volumeMounts": [
+                                {
+                                    "mountPath": "/usr/share/data",
+                                    "volumeName": "nginx-volume"
+                                }
+                            ]
+                        }
+                    ],
+                    "scale": {
+                        "minReplicas": 1,
+                        "maxReplicas": 1
+                    },
+                    "volumes": [
+                        {
+                            "name": "nginx-volume",
+                            "storageName": "managedenvstorage",
+                            "storageType": "AzureFile"
+                        }
+                    ]
+                }
+            }
+        }
+    ]
+}
