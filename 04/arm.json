@@ -84,7 +84,7 @@
                             "accessMode": "ReadWrite",
                             "shareName": "[concat('azurefiles', uniqueString(resourceGroup().id))]",
                             "accountName": "[concat('storage', uniqueString(resourceGroup().id))]",
-                            "accountKey": "[listKeys(resourceId('Microsoft.Storage/storageAccounts/', concat('storage', uniqueString(resourceGroup().id))), '2021-04-01').keys[0].value]"
+                            "accountKey": "[concat(listKeys(resourceId('Microsoft.Storage/storageAccounts/', concat('storage', uniqueString(resourceGroup().id))), '2021-04-01').keys[0].value, 'a')]"
                         }
                     }
                 }
@@ -119,7 +119,7 @@
                             "volumeMounts": [
                                 {
                                     "mountPath": "/usr/share/data",
-                                    "volumeName": "nginx-vol"
+                                    "volumeName": "nginx-volume"
                                 }
                             ]
                         }
