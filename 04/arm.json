@@ -69,12 +69,18 @@
                         "customerId": "[reference(resourceId('Microsoft.OperationalInsights/workspaces/', variables('logAnalyticsWorkspaceName')), '2021-06-01').customerId]",
                         "sharedKey": "[listKeys(resourceId('Microsoft.OperationalInsights/workspaces/', variables('logAnalyticsWorkspaceName')), '2021-06-01').primarySharedKey]"
                     }
-                }
+                },
+                "workloadProfiles": [
+                    {
+                        "name": "Consumption",
+                        "workloadProfileType": "Consumption"
+                    }
+                ]
             },
             "resources": [
                 {
                     "type": "storages",
-                    "apiVersion": "2022-03-01",
+                    "apiVersion": "2023-05-01",
                     "name": "managedenvstorage",
                     "dependsOn": [
                         "[resourceId('Microsoft.App/managedEnvironments/', parameters('environment_name'))]"
