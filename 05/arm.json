@@ -98,7 +98,7 @@
                     }
                 ],
                 "vnetConfiguration": {
-                    "subnetId": "[resourceId('Microsoft.Network/virtualNetworks/subnets', 'vnet', 'default')]"
+                    "infrastructureSubnetId": "[resourceId('Microsoft.Network/virtualNetworks/subnets', 'vnet', 'default')]"
                 }
             },
             "resources": [
