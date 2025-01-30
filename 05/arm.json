@@ -65,7 +65,10 @@
                         }
                     }
                 ]
-            }
+            },
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/networkSecurityGroups', 'nsg')]"
+            ]
         },
         {
             "type": "Microsoft.Storage/storageAccounts",
