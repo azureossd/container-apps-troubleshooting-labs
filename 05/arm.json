@@ -12,6 +12,30 @@
     },
     "resources": [
         {
+            "type": "Microsoft.Network/networkSecurityGroups",
+            "name": "nsg",
+            "apiVersion": "2024-05-01",
+            "location": "[resourceGroup().location]",
+            "properties": {
+                "securityRules": [
+                    {
+                        "name": "Storage",
+                        "properties": {
+                            "access": "Deny",
+                            "description": "Storage NSG rule",
+                            "destinationAddressPrefix": "*",
+                            "destinationPortRange": "445",
+                            "direction": "Outbound",
+                            "priority": 100,
+                            "protocol": "*",
+                            "sourceAddressPrefix": "*",
+                            "sourcePortRange": "*"
+                        }
+                    }
+                ]
+            }
+        },
+        {
             "type": "Microsoft.Network/virtualNetworks",
             "apiVersion": "2024-01-01",
             "name": "vnet",
@@ -36,26 +60,7 @@
                                 }
                             ],
                             "networkSecurityGroup": {
-                                "id": "[resourceId('Microsoft.Network/networkSecurityGroups', 'nsg')]",
-                                "location": "[resourceGroup().location]",
-                                "properties": {
-                                    "securityRules": [
-                                        {
-                                            "name": "Storage",
-                                            "properties": {
-                                                "access": "Deny",
-                                                "description": "Storage NSG rule",
-                                                "destinationAddressPrefix": "*",
-                                                "destinationPortRange": "445",
-                                                "direction": "Outbound",
-                                                "priority": 100,
-                                                "protocol": "*",
-                                                "sourceAddressPrefix": "*",
-                                                "sourcePortRange": "*"
-                                            }
-                                        }
-                                    ]
-                                }
+                                "id": "[resourceId('Microsoft.Network/networkSecurityGroups', 'nsg')]"
                             }
                         }
                     }
