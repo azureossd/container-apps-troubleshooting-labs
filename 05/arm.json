@@ -26,7 +26,15 @@
                     {
                         "name": "default",
                         "properties": {
-                            "addressPrefix": "10.0.0.0/23"
+                            "addressPrefix": "10.0.0.0/23",
+                            "delegations": [
+                                {
+                                    "name": "delegation",
+                                    "properties": {
+                                        "serviceName": "Microsoft.App/environments"
+                                    }
+                                }
+                            ]
                         }
                     }
                 ]
