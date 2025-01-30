@@ -34,7 +34,29 @@
                                         "serviceName": "Microsoft.App/environments"
                                     }
                                 }
-                            ]
+                            ],
+                            "networkSecurityGroup": {
+                                "id": "[resourceId('Microsoft.Network/networkSecurityGroups', 'nsg')]",
+                                "location": "[resourceGroup().location]",
+                                "properties": {
+                                    "securityRules": [
+                                        {
+                                            "name": "Storage",
+                                            "properties": {
+                                                "access": "Deny",
+                                                "description": "Storage NSG rule",
+                                                "destinationAddressPrefix": "*",
+                                                "destinationPortRange": "445",
+                                                "direction": "Outbound",
+                                                "priority": 100,
+                                                "protocol": "*",
+                                                "sourceAddressPrefix": "*",
+                                                "sourcePortRange": "*"
+                                            }
+                                        }
+                                    ]
+                                }
+                            }
                         }
                     }
                 ]
