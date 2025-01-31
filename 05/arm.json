@@ -23,8 +23,8 @@
                         "properties": {
                             "access": "Deny",
                             "description": "Storage NSG rule",
-                            "destinationAddressPrefix": "*",
-                            "destinationPortRange": "445",
+                            "destinationAddressPrefix": "Storage",
+                            "destinationPortRange": "*",
                             "direction": "Outbound",
                             "priority": 100,
                             "protocol": "*",
