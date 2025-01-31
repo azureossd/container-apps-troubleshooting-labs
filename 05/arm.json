@@ -19,14 +19,28 @@
             "properties": {
                 "securityRules": [
                     {
-                        "name": "Storage",
+                        "name": "StorageOutbound",
                         "properties": {
                             "access": "Deny",
-                            "description": "Storage NSG rule",
+                            "description": "Storage NSG rule - outbound",
                             "destinationAddressPrefix": "Storage",
                             "destinationPortRange": "*",
                             "direction": "Outbound",
                             "priority": 100,
+                            "protocol": "*",
+                            "sourceAddressPrefix": "*",
+                            "sourcePortRange": "*"
+                        }
+                    },
+                    {
+                        "name": "StorageInbound",
+                        "properties": {
+                            "access": "Deny",
+                            "description": "Storage NSG rule - inbound",
+                            "destinationAddressPrefix": "Storage",
+                            "destinationPortRange": "*",
+                            "direction": "Inbound",
+                            "priority": 200,
                             "protocol": "*",
                             "sourceAddressPrefix": "*",
                             "sourcePortRange": "*"
