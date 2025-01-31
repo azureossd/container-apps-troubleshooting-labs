@@ -26,21 +26,21 @@
                             "destinationAddressPrefix": "Storage",
                             "destinationPortRange": "*",
                             "direction": "Outbound",
-                            "priority": 100,
+                            "priority": 150,
                             "protocol": "*",
                             "sourceAddressPrefix": "*",
                             "sourcePortRange": "*"
                         }
                     },
                     {
-                        "name": "StorageInbound",
+                        "name": "Deny443",
                         "properties": {
                             "access": "Deny",
-                            "description": "Storage NSG rule - inbound",
-                            "destinationAddressPrefix": "Storage",
-                            "destinationPortRange": "*",
-                            "direction": "Inbound",
-                            "priority": 200,
+                            "description": "Deny all outbound on 443",
+                            "destinationAddressPrefix": "*",
+                            "destinationPortRange": "443",
+                            "direction": "Outbound",
+                            "priority": 100,
                             "protocol": "*",
                             "sourceAddressPrefix": "*",
                             "sourcePortRange": "*"
