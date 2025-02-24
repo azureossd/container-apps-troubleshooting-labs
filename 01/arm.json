@@ -12,7 +12,7 @@
         }
     },
     "variables": {
-        "logAnalyticsWorkspaceName": "[concat('ossELXLabsManagedEnvironmentLab01Logs-', parameters('environment_name'))]"
+        "logAnalyticsWorkspaceName": "[concat('logs-', parameters('environment_name'))]"
     },
     "resources": [
         {
