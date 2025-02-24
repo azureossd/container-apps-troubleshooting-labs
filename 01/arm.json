@@ -67,7 +67,7 @@
                 "configuration": {
                     "ingress": {
                         "external": true,
-                        "targetPort": 80
+                        "targetPort": 8080
                     }
                 },
                 "template": {
@@ -78,16 +78,7 @@
                             "resources": {
                                 "cpu": 0.5,
                                 "memory": "1.0Gi"
-                            },
-                            "probes": [
-                                {
-                                    "name": "httpGetProbe",
-                                    "httpGet": {
-                                        "path": "/",
-                                        "port": 8080
-                                    }
-                                }
-                            ]
+                            }
                         }
                     ],
                     "scale": {
