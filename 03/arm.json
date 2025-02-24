@@ -3,7 +3,7 @@
     "contentVersion": "1.0.0.0",
     "parameters": {
         "environment_name": {
-            "defaultValue": "[concat('managedEnv-', uniqueString(resourceGroup().id))]",
+            "defaultValue": "[concat('ossELXLabsManagedEnvironmentLab03-', uniqueString(resourceGroup().id))]",
             "type": "string"
         },
         "location": {
@@ -12,7 +12,7 @@
         }
     },
     "variables": {
-        "logAnalyticsWorkspaceName": "[concat('logs-', parameters('environment_name'))]"
+        "logAnalyticsWorkspaceName": "[concat('ossELXLabsManagedEnvironmentLab03Logs-', parameters('environment_name'))]"
     },
     "resources": [
         {
@@ -59,7 +59,7 @@
         {
             "type": "Microsoft.App/containerApps",
             "apiVersion": "2024-03-01",
-            "name": "nginx",
+            "name": "container-apps-elx-labs-03",
             "location": "[parameters('location')]",
             "dependsOn": [
                 "[resourceId('Microsoft.App/managedEnvironments/', parameters('environment_name'))]"
@@ -77,7 +77,7 @@
                     "containers": [
                         {
                             "image": "nginx:latest",
-                            "name": "nginx",
+                            "name": "container-apps-elx-labs-03",
                             "resources": {
                                 "cpu": 0.5,
                                 "memory": "1.0Gi"

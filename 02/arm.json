@@ -3,12 +3,12 @@
     "contentVersion": "1.0.0.0",
     "parameters": {
         "environment_name": {
-            "defaultValue": "[concat('managedEnv-', uniqueString(resourceGroup().id))]",
+            "defaultValue": "[concat('ossELXLabsManagedEnvironmentLab02-', uniqueString(resourceGroup().id))]",
             "type": "string"
         }
     },
     "variables": {
-        "logAnalyticsWorkspaceName": "[concat('logs-', parameters('environment_name'))]"
+        "logAnalyticsWorkspaceName": "[concat('ossELXLabsManagedEnvironmentLab02Logs-', parameters('environment_name'))]"
     },
     "resources": [
         {
@@ -74,7 +74,29 @@
                             "resources": {
                                 "cpu": 1,
                                 "memory": "2.0Gi"
-                            }
+                            },
+                            "probes": [
+                                {
+                                    "type": "Startup",
+                                    "tcpSocket": {
+                                        "port": 8080
+                                    },
+                                    "initialDelaySeconds": 1,
+                                    "periodSeconds": 2,
+                                    "successThreshold": 1,
+                                    "failureThreshold": 3
+                                },
+                                {
+                                    "type": "Liveness",
+                                    "tcpSocket": {
+                                        "port": 8080
+                                    },
+                                    "initialDelaySeconds": 1,
+                                    "periodSeconds": 2,
+                                    "successThreshold": 1,
+                                    "failureThreshold": 3
+                                }
+                            ]
                         }
                     ],
                     "scale": {

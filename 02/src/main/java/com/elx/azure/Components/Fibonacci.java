@@ -21,12 +21,12 @@ public class Fibonacci {
       if (mod == 5) {
         try {
           logger.info("Calculated modulo of " + num1 + " % 10: " + mod + "\n");
-          logger.info("Sleeping for 4 second..");
+          logger.info("Sleeping for 2 second..");
           // Calculate the percentage of completion
           double percentage = ((double) i / n) * 100;
           double roundedPercentage = Math.round(percentage);
           logger.info("Current percentage completed: " + roundedPercentage + "%");
-          TimeUnit.SECONDS.sleep(4);
+          TimeUnit.SECONDS.sleep(2);
         } catch (InterruptedException e) {
           e.printStackTrace();
         }
@@ -38,7 +38,7 @@ public class Fibonacci {
 
   public void run() {
     System.out.println("Starting calculations..");
-    int n = 1100;
+    int n = 300;
 
     long startTime = System.nanoTime();
     fibonacci(n);
