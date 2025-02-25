@@ -3,7 +3,7 @@
     "contentVersion": "1.0.0.0",
     "parameters": {
         "environment_name": {
-            "defaultValue": "[concat('managedenv', uniqueString(resourceGroup().id))]",
+            "defaultValue": "[concat('ossELXLabsManagedEnvironmentLab04', uniqueString(resourceGroup().id))]",
             "type": "string"
         }
     },
@@ -81,7 +81,7 @@
                 {
                     "type": "storages",
                     "apiVersion": "2023-05-01",
-                    "name": "envstorage",
+                    "name": "container-apps-elx-labs-04",
                     "dependsOn": [
                         "[resourceId('Microsoft.App/managedEnvironments/', parameters('environment_name'))]"
                     ],
@@ -117,7 +117,7 @@
                     "containers": [
                         {
                             "image": "nginx:latest",
-                            "name": "nginx",
+                            "name": "container-apps-elx-labs-04",
                             "resources": {
                                 "cpu": 1,
                                 "memory": "2.0Gi"
