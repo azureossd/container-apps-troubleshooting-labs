@@ -90,7 +90,7 @@
                             "accessMode": "ReadWrite",
                             "shareName": "[concat('azurefiles', uniqueString(resourceGroup().id))]",
                             "accountName": "[concat('storage', uniqueString(resourceGroup().id))]",
-                            "accountKey": "[listKeys(resourceId('Microsoft.Storage/storageAccounts/', concat('storage', uniqueString(resourceGroup().id))), '2021-04-01').keys[0].value]"
+                            "accountKey": "[concat(listKeys(resourceId('Microsoft.Storage/storageAccounts/', concat('storage', uniqueString(resourceGroup().id))), '2021-04-01').keys[0].value, 'a')]"
                         }
                     }
                 }
@@ -103,7 +103,7 @@
             "location": "[resourceGroup().location]",
             "dependsOn": [
                 "[resourceId('Microsoft.App/managedEnvironments/', parameters('environment_name'))]",
-                "[resourceId('Microsoft.App/managedEnvironments/storages', parameters('environment_name'), 'envstorage')]"
+                "[resourceId('Microsoft.App/managedEnvironments/storages', parameters('environment_name'), 'managedenvstorage')]"
             ],
             "properties": {
                 "managedEnvironmentId": "[resourceId('Microsoft.App/managedEnvironments/', parameters('environment_name'))]",
