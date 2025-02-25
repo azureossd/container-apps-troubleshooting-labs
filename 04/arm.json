@@ -81,7 +81,7 @@
                 {
                     "type": "storages",
                     "apiVersion": "2023-05-01",
-                    "name": "container-apps-elx-labs-04",
+                    "name": "managedenvstorage",
                     "dependsOn": [
                         "[resourceId('Microsoft.App/managedEnvironments/', parameters('environment_name'))]"
                     ],
