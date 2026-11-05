@@ -1,0 +1,149 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "location": {
+            "type": "string",
+            "defaultValue": "[resourceGroup().location]"
+        },
+        "environment_name": {
+            "type": "string",
+            "defaultValue": "[concat('oss-specialist-09-', uniqueString(resourceGroup().id))]"
+        },
+        "executionTimeout": {
+            "type": "int",
+            "defaultValue": 5,
+            "minValue": 1,
+            "maxValue": 120
+        }
+    },
+    "variables": {
+        "workspaceName": "[concat('logs-', parameters('environment_name'))]",
+        "appName": "container-apps-specialist-09",
+        "runtimeImage": "docker.io/library/python:3.14.7-slim-bookworm@sha256:82bc3c539b8813ada9d68c63b40158fa002f7f33de9bf3312a3dfdc0620dff56",
+        "fixture": "import json\nimport os\nimport time\n\n\ndef main():\n    seconds = float(os.environ.get(\"WORK_SECONDS\", \"20\"))\n    if not 0 <= seconds <= 30:\n        raise ValueError(\"WORK_SECONDS must be between 0 and 30\")\n    print(json.dumps({\"lab\": \"09\", \"event\": \"started\"}), flush=True)\n    time.sleep(seconds)\n    print(json.dumps({\"lab\": \"09\", \"event\": \"completed\"}), flush=True)\n\n\nif __name__ == \"__main__\":\n    main()\n"
+    },
+    "resources": [
+        {
+            "type": "Microsoft.OperationalInsights/workspaces",
+            "apiVersion": "2025-07-01",
+            "name": "[variables('workspaceName')]",
+            "location": "[parameters('location')]",
+            "properties": {
+                "sku": {
+                    "name": "PerGB2018"
+                },
+                "retentionInDays": 30,
+                "workspaceCapping": {
+                    "dailyQuotaGb": 1
+                }
+            }
+        },
+        {
+            "type": "Microsoft.App/managedEnvironments",
+            "apiVersion": "2025-07-01",
+            "name": "[parameters('environment_name')]",
+            "location": "[parameters('location')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.OperationalInsights/workspaces', variables('workspaceName'))]"
+            ],
+            "properties": {
+                "appLogsConfiguration": {
+                    "destination": "azure-monitor"
+                },
+                "workloadProfiles": [
+                    {
+                        "name": "Consumption",
+                        "workloadProfileType": "Consumption"
+                    }
+                ]
+            }
+        },
+        {
+            "type": "Microsoft.Insights/diagnosticSettings",
+            "apiVersion": "2021-05-01-preview",
+            "scope": "[resourceId('Microsoft.App/managedEnvironments', parameters('environment_name'))]",
+            "name": "lab-logs",
+            "dependsOn": [
+                "[resourceId('Microsoft.OperationalInsights/workspaces', variables('workspaceName'))]",
+                "[resourceId('Microsoft.App/managedEnvironments', parameters('environment_name'))]"
+            ],
+            "properties": {
+                "workspaceId": "[resourceId('Microsoft.OperationalInsights/workspaces', variables('workspaceName'))]",
+                "logAnalyticsDestinationType": "Dedicated",
+                "logs": [
+                    {
+                        "category": "ContainerAppSystemLogs",
+                        "enabled": true
+                    },
+                    {
+                        "category": "ContainerAppConsoleLogs",
+                        "enabled": true
+                    }
+                ]
+            }
+        },
+        {
+            "type": "Microsoft.App/jobs",
+            "apiVersion": "2025-07-01",
+            "name": "[variables('appName')]",
+            "location": "[parameters('location')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.App/managedEnvironments', parameters('environment_name'))]"
+            ],
+            "properties": {
+                "environmentId": "[resourceId('Microsoft.App/managedEnvironments', parameters('environment_name'))]",
+                "workloadProfileName": "Consumption",
+                "configuration": {
+                    "triggerType": "Manual",
+                    "replicaTimeout": "[parameters('executionTimeout')]",
+                    "replicaRetryLimit": 0,
+                    "manualTriggerConfig": {
+                        "parallelism": 1,
+                        "replicaCompletionCount": 1
+                    }
+                },
+                "template": {
+                    "containers": [
+                        {
+                            "name": "lab-09",
+                            "image": "[variables('runtimeImage')]",
+                            "command": [
+                                "python",
+                                "-u",
+                                "-c"
+                            ],
+                            "args": [
+                                "[variables('fixture')]"
+                            ],
+                            "env": [
+                                {
+                                    "name": "WORK_SECONDS",
+                                    "value": "20"
+                                }
+                            ],
+                            "resources": {
+                                "cpu": 0.25,
+                                "memory": "0.5Gi"
+                            }
+                        }
+                    ]
+                }
+            }
+        }
+    ],
+    "outputs": {
+        "environmentName": {
+            "type": "string",
+            "value": "[parameters('environment_name')]"
+        },
+        "workspaceName": {
+            "type": "string",
+            "value": "[variables('workspaceName')]"
+        },
+        "jobName": {
+            "type": "string",
+            "value": "[variables('appName')]"
+        }
+    }
+}
