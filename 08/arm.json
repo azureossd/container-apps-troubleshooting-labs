@@ -1,0 +1,169 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "location": {
+            "type": "string",
+            "defaultValue": "[resourceGroup().location]"
+        },
+        "environment_name": {
+            "type": "string",
+            "defaultValue": "[concat('oss-specialist-08-', uniqueString(resourceGroup().id))]"
+        },
+        "stage": {
+            "type": "string",
+            "defaultValue": "baseline",
+            "allowedValues": [
+                "baseline",
+                "exercise",
+                "fixed"
+            ]
+        }
+    },
+    "variables": {
+        "workspaceName": "[concat('logs-', parameters('environment_name'))]",
+        "appName": "container-apps-specialist-08",
+        "runtimeImage": "docker.io/library/python:3.14.7-slim-bookworm@sha256:82bc3c539b8813ada9d68c63b40158fa002f7f33de9bf3312a3dfdc0620dff56",
+        "exerciseImage": "docker.io/library/python:aca-specialist-08-not-a-release",
+        "fixture": "import json\nimport os\nimport uuid\nfrom http.server import BaseHTTPRequestHandler, ThreadingHTTPServer\nfrom urllib.error import HTTPError, URLError\nfrom urllib.parse import urlencode, urlsplit\nfrom urllib.request import Request, urlopen\n\n\nclass DependencyFailure(Exception):\n    def __init__(self, stage, status):\n        super().__init__(f\"{stage} returned HTTP {status}\")\n        self.stage = stage\n        self.status = status\n\n\ndef fetch_json(request, stage):\n    try:\n        with urlopen(request, timeout=5) as response:\n            return json.load(response)\n    except HTTPError as error:\n        status = error.code\n        error.close()\n        raise DependencyFailure(stage, status) from None\n    except (URLError, TimeoutError, json.JSONDecodeError):\n        raise DependencyFailure(stage, 503) from None\n\n\ndef check_secret(environ):\n    endpoint = environ[\"IDENTITY_ENDPOINT\"]\n    query = urlencode({\n        \"resource\": environ[\"VAULT_RESOURCE\"],\n        \"api-version\": \"2019-08-01\",\n        \"client_id\": environ[\"AZURE_CLIENT_ID\"],\n    })\n    separator = \"&\" if \"?\" in endpoint else \"?\"\n    token = fetch_json(Request(\n        endpoint + separator + query,\n        headers={\"X-IDENTITY-HEADER\": environ[\"IDENTITY_HEADER\"]},\n    ), \"identity\")\n    if not isinstance(token, dict) or not isinstance(token.get(\"access_token\"), str):\n        raise DependencyFailure(\"identity\", 502)\n    if not token[\"access_token\"]:\n        raise DependencyFailure(\"identity\", 502)\n    vault_url = environ[\"VAULT_URL\"].rstrip(\"/\")\n    secret = fetch_json(Request(\n        vault_url + \"/secrets/training-marker?api-version=7.4\",\n        headers={\"Authorization\": \"Bearer \" + token[\"access_token\"]},\n    ), \"secret-read\")\n    if not isinstance(secret, dict) or not isinstance(secret.get(\"value\"), str):\n        raise DependencyFailure(\"secret-read\", 502)\n\n\ndef emit(event, **fields):\n    print(json.dumps({\"event\": event, **fields}), flush=True)\n\n\nclass Handler(BaseHTTPRequestHandler):\n    def do_GET(self):\n        path = urlsplit(self.path).path\n        request_id = str(uuid.uuid4())\n        payload = {\n            \"lab\": os.environ[\"LAB_NUMBER\"],\n            \"status\": \"ok\",\n            \"requestId\": request_id,\n        }\n        status = 200\n        if path not in (\"/\", \"/health\", \"/check\"):\n            status, payload[\"status\"] = 404, \"not-found\"\n        elif path == \"/check\" and os.environ.get(\"LAB_MODE\") == \"identity\":\n            try:\n                check_secret(os.environ)\n            except DependencyFailure as error:\n                status = error.status\n                payload[\"status\"] = \"dependency-error\"\n                payload[\"dependencyStatus\"] = error.status\n                emit(\"dependency-error\", requestId=request_id,\n                     stage=error.stage, status=error.status)\n            except KeyError:\n                status, payload[\"status\"] = 500, \"configuration-error\"\n                emit(\"configuration-error\", requestId=request_id)\n        if \"RELEASE\" in os.environ:\n            payload[\"release\"] = os.environ[\"RELEASE\"]\n        emit(\"request\", lab=os.environ[\"LAB_NUMBER\"], requestId=request_id, status=status)\n        data = json.dumps(payload).encode()\n        self.send_response(status)\n        self.send_header(\"Content-Type\", \"application/json\")\n        self.send_header(\"Content-Length\", str(len(data)))\n        self.send_header(\"Cache-Control\", \"no-store\")\n        self.end_headers()\n        self.wfile.write(data)\n\n    def log_message(self, format, *args):\n        # Structured events above replace URL/header logging.\n        pass\n\n\nif __name__ == \"__main__\":\n    port = int(os.environ.get(\"PORT\", \"8080\"))\n    emit(\"started\", lab=os.environ[\"LAB_NUMBER\"], port=port)\n    ThreadingHTTPServer((\"0.0.0.0\", port), Handler).serve_forever()\n"
+    },
+    "resources": [
+        {
+            "type": "Microsoft.OperationalInsights/workspaces",
+            "apiVersion": "2025-07-01",
+            "name": "[variables('workspaceName')]",
+            "location": "[parameters('location')]",
+            "properties": {
+                "sku": {
+                    "name": "PerGB2018"
+                },
+                "retentionInDays": 30,
+                "workspaceCapping": {
+                    "dailyQuotaGb": 1
+                }
+            }
+        },
+        {
+            "type": "Microsoft.App/managedEnvironments",
+            "apiVersion": "2025-07-01",
+            "name": "[parameters('environment_name')]",
+            "location": "[parameters('location')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.OperationalInsights/workspaces', variables('workspaceName'))]"
+            ],
+            "properties": {
+                "appLogsConfiguration": {
+                    "destination": "azure-monitor"
+                },
+                "workloadProfiles": [
+                    {
+                        "name": "Consumption",
+                        "workloadProfileType": "Consumption"
+                    }
+                ]
+            }
+        },
+        {
+            "type": "Microsoft.Insights/diagnosticSettings",
+            "apiVersion": "2021-05-01-preview",
+            "scope": "[resourceId('Microsoft.App/managedEnvironments', parameters('environment_name'))]",
+            "name": "lab-logs",
+            "dependsOn": [
+                "[resourceId('Microsoft.OperationalInsights/workspaces', variables('workspaceName'))]",
+                "[resourceId('Microsoft.App/managedEnvironments', parameters('environment_name'))]"
+            ],
+            "properties": {
+                "workspaceId": "[resourceId('Microsoft.OperationalInsights/workspaces', variables('workspaceName'))]",
+                "logAnalyticsDestinationType": "Dedicated",
+                "logs": [
+                    {
+                        "category": "ContainerAppSystemLogs",
+                        "enabled": true
+                    },
+                    {
+                        "category": "ContainerAppConsoleLogs",
+                        "enabled": true
+                    }
+                ]
+            }
+        },
+        {
+            "type": "Microsoft.App/containerApps",
+            "apiVersion": "2025-07-01",
+            "name": "[variables('appName')]",
+            "location": "[parameters('location')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.App/managedEnvironments', parameters('environment_name'))]"
+            ],
+            "properties": {
+                "managedEnvironmentId": "[resourceId('Microsoft.App/managedEnvironments', parameters('environment_name'))]",
+                "workloadProfileName": "Consumption",
+                "configuration": {
+                    "activeRevisionsMode": "Single",
+                    "ingress": {
+                        "external": true,
+                        "targetPort": 8080,
+                        "transport": "http",
+                        "allowInsecure": false
+                    }
+                },
+                "template": {
+                    "containers": [
+                        {
+                            "name": "lab-08",
+                            "image": "[if(equals(parameters('stage'), 'exercise'), variables('exerciseImage'), variables('runtimeImage'))]",
+                            "command": [
+                                "python",
+                                "-u",
+                                "-c"
+                            ],
+                            "args": [
+                                "[variables('fixture')]"
+                            ],
+                            "env": [
+                                {
+                                    "name": "LAB_NUMBER",
+                                    "value": "08"
+                                },
+                                {
+                                    "name": "PORT",
+                                    "value": "8080"
+                                },
+                                {
+                                    "name": "RELEASE",
+                                    "value": "[parameters('stage')]"
+                                }
+                            ],
+                            "resources": {
+                                "cpu": 0.25,
+                                "memory": "0.5Gi"
+                            }
+                        }
+                    ],
+                    "scale": {
+                        "minReplicas": 1,
+                        "maxReplicas": 1
+                    }
+                }
+            }
+        }
+    ],
+    "outputs": {
+        "environmentName": {
+            "type": "string",
+            "value": "[parameters('environment_name')]"
+        },
+        "workspaceName": {
+            "type": "string",
+            "value": "[variables('workspaceName')]"
+        },
+        "appName": {
+            "type": "string",
+            "value": "[variables('appName')]"
+        },
+        "appUrl": {
+            "type": "string",
+            "value": "[uri(format('https://{0}', reference(resourceId('Microsoft.App/containerApps', variables('appName')), '2025-07-01').configuration.ingress.fqdn), '/')]"
+        }
+    }
+}
