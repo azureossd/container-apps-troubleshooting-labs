@@ -101,7 +101,7 @@
                     "name": "standard"
                 },
                 "enableRbacAuthorization": true,
-                "enableSoftDelete": true,
+                "enableSoftDelete": false,
                 "softDeleteRetentionInDays": 7,
                 "enablePurgeProtection": false,
                 "publicNetworkAccess": "Enabled",
