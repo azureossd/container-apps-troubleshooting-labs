@@ -12,16 +12,16 @@
         },
         "executionTimeout": {
             "type": "int",
-            "defaultValue": 5,
+            "defaultValue": 120,
             "minValue": 1,
-            "maxValue": 120
+            "maxValue": 600
         }
     },
     "variables": {
         "workspaceName": "[concat('logs-', parameters('environment_name'))]",
         "appName": "container-apps-specialist-09",
         "runtimeImage": "docker.io/library/python:3.14.7-slim-bookworm@sha256:82bc3c539b8813ada9d68c63b40158fa002f7f33de9bf3312a3dfdc0620dff56",
-        "fixture": "import json\nimport os\nimport time\n\n\ndef log_progress(event, elapsed, seconds):\n    print(json.dumps({\n        \"lab\": \"09\",\n        \"event\": event,\n        \"elapsedSeconds\": round(elapsed, 3),\n        \"workSeconds\": seconds,\n        \"remainingSeconds\": round(max(0, seconds - elapsed), 3),\n    }), flush=True)\n\n\ndef main():\n    seconds = float(os.environ.get(\"WORK_SECONDS\", \"20\"))\n    if not 0 <= seconds <= 30:\n        raise ValueError(\"WORK_SECONDS must be between 0 and 30\")\n    started = time.monotonic()\n    log_progress(\"started\", 0, seconds)\n    while True:\n        remaining = seconds - (time.monotonic() - started)\n        if remaining <= 0:\n            break\n        time.sleep(min(1, remaining))\n        elapsed = min(seconds, time.monotonic() - started)\n        if elapsed < seconds:\n            log_progress(\"progress\", elapsed, seconds)\n    log_progress(\"completed\", seconds, seconds)\n\n\nif __name__ == \"__main__\":\n    main()\n"
+        "fixture": "import json\nimport os\nimport time\n\n\ndef log_progress(event, elapsed, seconds):\n    print(json.dumps({\n        \"lab\": \"09\",\n        \"event\": event,\n        \"elapsedSeconds\": round(elapsed, 3),\n        \"workSeconds\": seconds,\n        \"remainingSeconds\": round(max(0, seconds - elapsed), 3),\n    }), flush=True)\n\n\ndef main():\n    seconds = float(os.environ.get(\"WORK_SECONDS\", \"300\"))\n    if not 0 <= seconds <= 300:\n        raise ValueError(\"WORK_SECONDS must be between 0 and 300\")\n    started = time.monotonic()\n    log_progress(\"started\", 0, seconds)\n    while True:\n        remaining = seconds - (time.monotonic() - started)\n        if remaining <= 0:\n            break\n        time.sleep(min(1, remaining))\n        elapsed = min(seconds, time.monotonic() - started)\n        if elapsed < seconds:\n            log_progress(\"progress\", elapsed, seconds)\n    log_progress(\"completed\", seconds, seconds)\n\n\nif __name__ == \"__main__\":\n    main()\n"
     },
     "resources": [
         {
@@ -119,7 +119,7 @@
                             "env": [
                                 {
                                     "name": "WORK_SECONDS",
-                                    "value": "20"
+                                    "value": "300"
                                 }
                             ],
                             "resources": {
